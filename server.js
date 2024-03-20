@@ -84,7 +84,7 @@ async function setupEnvironment(
       echo $PORT
     `;
 
-    await ssh.execCommand(findPortCommand);
+    const portResult = await ssh.execCommand(findPortCommand);
     const availablePort = portResult.stdout.trim();
     const folderName = repoUrl.match(/\/([^\/]+)\.git$/)[1];
     const dtNow = Date.now();
