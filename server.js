@@ -1,5 +1,5 @@
 const fs = require("fs");
-const path = require("path");
+const path = require('path');
 const express = require("express");
 const bodyParser = require("body-parser");
 const mysql = require("mysql2");
@@ -65,19 +65,6 @@ async function setupEnvironment(
     const sshHost = vmIpAddress;
     const sshPassword = vmPassword;
 
-    const envContent = `appId=${envVars.appId}
-    key=${envVars.key}
-    secret=${envVars.secret}
-    cluster=${envVars.cluster}
-    useTLS=${envVars.useTLS}
-    cid=${cid}
-    PORT=${availablePort}
-    repoUrl=${repoUrl}"`;
-
-    const tempEnvPath = path.join(__dirname, "tempEnvFile.env");
-    fs.writeFileSync(tempEnvPath, envContent);
-    console.log("Local .env file created.");
-
     await ssh.connect({
       host: sshHost,
       username: sshUser,
@@ -108,6 +95,19 @@ async function setupEnvironment(
     await ssh.execCommand(gitCloneCommand);
     console.log("Repository cloned.");
 
+    const envContent = `appId=${envVars.appId}
+    key=${envVars.key}
+    secret=${envVars.secret}
+    cluster=${envVars.cluster}
+    useTLS=${envVars.useTLS}
+    cid=${cid}
+    PORT=${availablePort}
+    repoUrl=${repoUrl}"`;
+
+    const tempEnvPath = path.join(__dirname, "tempEnvFile.env");
+    fs.writeFileSync(tempEnvPath, envContent);
+    console.log("Local .env file created.");
+    
     console.log("debug1");
     await ssh.putFile(tempEnvPath, `./${uniqueFolderName}/.env`);
     console.log("debug2");
