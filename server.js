@@ -1,8 +1,10 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mysql = require("mysql2");
+const ssh = require("node-ssh");
 require("dotenv").config();
 
+const ssh = new NodeSSH();
 const app = express();
 app.use(bodyParser.json());
 
@@ -15,7 +17,7 @@ const db = mysql.createConnection({
 
 db.connect((err) => {
   if (err) throw err;
-  console.log("Connected to the database."); // use db to query pusher credentials
+  console.log("Connected to the database.");
 });
 
 function verifyUser(email, callback) {
@@ -24,7 +26,7 @@ function verifyUser(email, callback) {
   )}`;
   db.query(sql, (err, result) => {
     if (err) throw err;
-    callback(result[0].count > 0); // true if user exists
+    callback(result[0].count > 0);
   });
 }
 
@@ -34,7 +36,7 @@ function verifyNoDuplicate(cid, callback) {
   )}`;
   db.query(sql, (err, result) => {
     if (err) throw err;
-    callback(result[0].count > 0); // true if cid exists
+    callback(result[0].count > 0);
   });
 }
 
@@ -42,9 +44,9 @@ function fetchEnvVariables(callback) {
   const sql = `SELECT APPID, APP_KEY, APP_SECRET, CLUSTER, USETLS FROM PUSHER;`;
   db.query(sql, (err, result) => {
     if (err) {
-      callback(null, err); // Pass error to callback
+      callback(null, err);
     } else {
-      callback(result[0], null); // Pass result and null for error
+      callback(result[0], null);
     }
   });
 }
@@ -57,7 +59,6 @@ async function setupEnvironment(
   vmPassword
 ) {
   try {
-    // use db to find pusher credentials and initialise them here
     const sshUser = vmUsername;
     const sshHost = vmIpAddress;
     const sshPassword = vmPassword;
@@ -127,7 +128,6 @@ async function setupEnvironment(
 app.post("/setup-environment", (req, res) => {
   const { cid, email, vmUsername, vmIpAddress, vmPassword } = req.body;
 
-  // First, verify if the user is valid
   verifyUser(email, (isValidUser) => {
     if (!isValidUser) {
       return res.status(401).send("Unauthorized: Invalid CID or email");
@@ -136,15 +136,12 @@ app.post("/setup-environment", (req, res) => {
     // Next, verify that there is no duplicate CID in LOGS_PUSHER
     verifyNoDuplicate(cid, (isDuplicate) => {
       if (isDuplicate) {
-        // If a duplicate is found, return an error response
         return res
           .status(400)
           .send("Error: CID already exists in LOGS_PUSHER.");
       }
 
-      // If there's no duplicate, fetch environment variables
       fetchEnvVariables(async (envVars) => {
-        // Then proceed to set up the environment
         try {
           await setupEnvironment(
             envVars,
@@ -155,11 +152,14 @@ app.post("/setup-environment", (req, res) => {
           );
           res.send("Environment setup initiated successfully.");
         } catch (error) {
-          // If setupEnvironment throws an error, catch it and return an error response
           console.error("Setup environment failed:", error);
           res.status(500).send("Failed to set up environment.");
         }
       });
     });
   });
+});
+
+server = app.listen(port, () => {
+  console.log(`Server is listening on port ${process.env.PORT}`);
 });
