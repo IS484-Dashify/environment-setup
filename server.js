@@ -1,7 +1,8 @@
+const fs = require("fs");
 const express = require("express");
 const bodyParser = require("body-parser");
 const mysql = require("mysql2");
-const { NodeSSH } = require('node-ssh');
+const { NodeSSH } = require("node-ssh");
 require("dotenv").config();
 
 const ssh = new NodeSSH();
@@ -63,6 +64,10 @@ async function setupEnvironment(
     const sshHost = vmIpAddress;
     const sshPassword = vmPassword;
 
+    const tempEnvPath = path.join(__dirname, "tempEnvFile.env");
+    fs.writeFileSync(tempEnvPath, envContent);
+    console.log("Local .env file created.");
+
     await ssh.connect({
       host: sshHost,
       username: sshUser,
@@ -73,7 +78,7 @@ async function setupEnvironment(
     console.log("iproute2 installed.");
 
     const repoUrl = "https://github.com/IS484-Dashify/prometheus-backend.git";
-    
+
     const npmInstallCommand = "npm install";
     const pm2StartCommand = "pm2 start server.js";
     const findPortCommand = `
@@ -101,11 +106,11 @@ async function setupEnvironment(
     cid=${cid}
     PORT=${availablePort}
     repoUrl=${repoUrl}"`;
-    console.log("debug1")
-    await ssh.putFile(Buffer.from(envContent), `./${uniqueFolderName}/.env`);
-    console.log("debug2")
+    console.log("debug1");
+    await ssh.putFile(tempEnvPath, `./${uniqueFolderName}/.env`);
+    console.log("debug2");
     console.log(".env file uploaded.");
-    console.log("debug3")
+    console.log("debug3");
 
     await ssh.execCommand(npmInstallCommand, { cwd: uniqueFolderName });
     console.log("npm packages installed.");
@@ -121,6 +126,9 @@ async function setupEnvironment(
       }
       console.log("New environment setup logged in LOGS_PUSHER.");
     });
+
+    fs.unlinkSync(tempEnvPath);
+    console.log("Local .env file removed.");
   } catch (error) {
     console.error(error);
   } finally {
