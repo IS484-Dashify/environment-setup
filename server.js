@@ -10,7 +10,7 @@ const db = mysql.createConnection({
   host: process.env.HOST,
   user: process.env.USER,
   password: process.env.PASSWORD,
-  database: process.env.DATABASE
+  database: process.env.DATABASE,
 });
 
 db.connect((err) => {
@@ -25,6 +25,16 @@ function verifyUser(email, callback) {
   db.query(sql, (err, result) => {
     if (err) throw err;
     callback(result[0].count > 0); // true if user exists
+  });
+}
+
+function verifyNoDuplicate(cid, callback) {
+  const sql = `SELECT COUNT(*) AS count FROM LOGS_PUSHER WHERE CID = ${db.escape(
+    cid
+  )}`;
+  db.query(sql, (err, result) => {
+    if (err) throw err;
+    callback(result[0].count > 0); // true if cid exists
   });
 }
 
@@ -102,13 +112,11 @@ async function setupEnvironment(
     const insertSql = `INSERT INTO LOGS_PUSHER (CID, PORT) VALUES (${cid}, ${availablePort})`;
     db.query(insertSql, [cid, availablePort], (err, result) => {
       if (err) {
-        console.error('Error inserting into LOGS_PUSHER:', err);
+        console.error("Error inserting into LOGS_PUSHER:", err);
         return;
       }
-      console.log('New environment setup logged in LOGS_PUSHER.');
+      console.log("New environment setup logged in LOGS_PUSHER.");
     });
-
-
   } catch (error) {
     console.error(error);
   } finally {
@@ -119,14 +127,39 @@ async function setupEnvironment(
 app.post("/setup-environment", (req, res) => {
   const { cid, email, vmUsername, vmIpAddress, vmPassword } = req.body;
 
+  // First, verify if the user is valid
   verifyUser(email, (isValidUser) => {
     if (!isValidUser) {
       return res.status(401).send("Unauthorized: Invalid CID or email");
     }
 
-    fetchEnvVariables(async (envVars) => {
-      await setupEnvironment(envVars, cid, vmUsername, vmIpAddress, vmPassword);
-      res.send("Environment setup initiated successfully.");
+    // Next, verify that there is no duplicate CID in LOGS_PUSHER
+    verifyNoDuplicate(cid, (isDuplicate) => {
+      if (isDuplicate) {
+        // If a duplicate is found, return an error response
+        return res
+          .status(400)
+          .send("Error: CID already exists in LOGS_PUSHER.");
+      }
+
+      // If there's no duplicate, fetch environment variables
+      fetchEnvVariables(async (envVars) => {
+        // Then proceed to set up the environment
+        try {
+          await setupEnvironment(
+            envVars,
+            cid,
+            vmUsername,
+            vmIpAddress,
+            vmPassword
+          );
+          res.send("Environment setup initiated successfully.");
+        } catch (error) {
+          // If setupEnvironment throws an error, catch it and return an error response
+          console.error("Setup environment failed:", error);
+          res.status(500).send("Failed to set up environment.");
+        }
+      });
     });
   });
 });
