@@ -101,9 +101,11 @@ async function setupEnvironment(
     cid=${cid}
     PORT=${availablePort}
     repoUrl=${repoUrl}"`;
-
+    console.log("debug1")
     await ssh.putFile(Buffer.from(envContent), `./${uniqueFolderName}/.env`);
+    console.log("debug2")
     console.log(".env file uploaded.");
+    console.log("debug3")
 
     await ssh.execCommand(npmInstallCommand, { cwd: uniqueFolderName });
     console.log("npm packages installed.");
