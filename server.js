@@ -21,7 +21,7 @@ db.connect((err) => {
 });
 
 function verifyUser(email, callback) {
-  const sql = `SELECT COUNT(*) AS count FROM Users WHERE email = ${db.escape(
+  const sql = `SELECT COUNT(*) AS count FROM USERS WHERE email = ${db.escape(
     email
   )}`;
   db.query(sql, (err, result) => {
