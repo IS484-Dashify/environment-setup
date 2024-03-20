@@ -160,6 +160,8 @@ app.post("/setup-environment", (req, res) => {
   });
 });
 
+const port = process.env.PORT || 3000;
+
 server = app.listen(port, () => {
-  console.log(`Server is listening on port ${process.env.PORT}`);
+  console.log(`Server is listening on port ${port}`);
 });
