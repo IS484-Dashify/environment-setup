@@ -72,6 +72,8 @@ async function setupEnvironment(
     });
 
     console.log(envVars);
+    print(envVars.APPID);
+    print(envVars.APP_KEY);
 
     await ssh.execCommand("sudo apt-get install iproute2");
     console.log("iproute2 installed.");
@@ -105,7 +107,7 @@ async function setupEnvironment(
     useTLS=${useTLS}
     cid=${cid}
     PORT=${availablePort}
-    repoUrl=${repoUrl}"`;
+    repoUrl="${repoUrl}"`;
 
     const tempEnvPath = path.join(__dirname, "tempEnvFile.env");
     fs.writeFileSync(tempEnvPath, envContent);
