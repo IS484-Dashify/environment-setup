@@ -83,9 +83,10 @@ async function setupEnvironment(
     console.log("iproute2 installed.");
 
     const repoUrl = "https://github.com/IS484-Dashify/prometheus-backend.git";
+    const dtNow = Date.now();
 
     const npmInstallCommand = "npm install";
-    const pm2StartCommand = "pm2 start server.js";
+    const pm2StartCommand = `pm2 start server.js --name server-${dtNow}`;
     const findPortCommand = `
       PORT=3000
       while ss -tulwn | grep -q ":$PORT "; do
@@ -97,7 +98,7 @@ async function setupEnvironment(
     const portResult = await ssh.execCommand(findPortCommand);
     const availablePort = portResult.stdout.trim();
     const folderName = repoUrl.match(/\/([^\/]+)\.git$/)[1];
-    const dtNow = Date.now();
+    
     const uniqueFolderName = `${folderName}-${dtNow}`;
     const gitCloneCommand = `git clone ${repoUrl} ${uniqueFolderName}`;
     await ssh.execCommand(gitCloneCommand);
