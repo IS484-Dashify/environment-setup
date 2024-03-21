@@ -97,7 +97,7 @@ async function setupEnvironment(
 
     const portResult = await ssh.execCommand(findPortCommand);
     const availablePort = portResult.stdout.trim();
-    print(availablePort);
+    console.log(availablePort);
     const folderName = repoUrl.match(/\/([^\/]+)\.git$/)[1];
     
     const uniqueFolderName = `${folderName}-${dtNow}`;
