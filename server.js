@@ -118,11 +118,8 @@ repoUrl="${repoUrl}"`;
     fs.writeFileSync(tempEnvPath, envContent);
     console.log("Local .env file created.");
 
-    console.log("debug1");
     await ssh.putFile(tempEnvPath, `./${uniqueFolderName}/.env`);
-    console.log("debug2");
     console.log(".env file uploaded.");
-    console.log("debug3");
 
     await ssh.execCommand(npmInstallCommand, { cwd: uniqueFolderName });
     console.log("npm packages installed.");
