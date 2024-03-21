@@ -122,6 +122,8 @@ async function setupEnvironment(
     await ssh.execCommand(npmInstallCommand, { cwd: uniqueFolderName });
     console.log("npm packages installed.");
 
+    time.sleep(10)
+
     await ssh.execCommand(pm2StartCommand, { cwd: uniqueFolderName });
     console.log("Server started with PM2.");
 
