@@ -71,6 +71,8 @@ async function setupEnvironment(
       password: sshPassword,
     });
 
+    console.log(envVars);
+
     await ssh.execCommand("sudo apt-get install iproute2");
     console.log("iproute2 installed.");
 
