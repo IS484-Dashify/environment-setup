@@ -86,7 +86,7 @@ async function setupEnvironment(
     const dtNow = Date.now();
 
     const npmInstallCommand = "npm install";
-    const pm2StartCommand = `pm2 start server.js --name server-${dtNow}`;
+    const pm2StartCommand = `pm2 start server.js --name server-${cid}`;
     const findPortCommand = `
       PORT=3000
       while ss -tulwn | grep -q ":$PORT "; do
