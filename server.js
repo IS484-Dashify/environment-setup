@@ -10,6 +10,10 @@ const ssh = new NodeSSH();
 const app = express();
 app.use(bodyParser.json());
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const db = mysql.createConnection({
   host: process.env.HOST,
   user: process.env.DB_USER,
@@ -122,7 +126,7 @@ async function setupEnvironment(
     await ssh.execCommand(npmInstallCommand, { cwd: uniqueFolderName });
     console.log("npm packages installed.");
 
-    time.sleep(10)
+    await sleep(5000);
 
     await ssh.execCommand(pm2StartCommand, { cwd: uniqueFolderName });
     console.log("Server started with PM2.");
