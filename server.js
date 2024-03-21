@@ -106,13 +106,13 @@ async function setupEnvironment(
     useTLS = envVars.USETLS === 1 ? true : false;
 
     const envContent = `appId="${envVars.APPID}"
-    key="${envVars.APP_KEY}"
-    secret="${envVars.APP_SECRET}"
-    cluster="${envVars.CLUSTER}"
-    useTLS="${useTLS}"
-    cid=${cid}
-    PORT=${availablePort}
-    repoUrl="${repoUrl}"`;
+key="${envVars.APP_KEY}"
+secret="${envVars.APP_SECRET}"
+cluster="${envVars.CLUSTER}"
+useTLS="${useTLS}"
+cid=${cid}
+PORT=${availablePort}
+repoUrl="${repoUrl}"`;
 
     const tempEnvPath = path.join(__dirname, "tempEnvFile.env");
     fs.writeFileSync(tempEnvPath, envContent);
